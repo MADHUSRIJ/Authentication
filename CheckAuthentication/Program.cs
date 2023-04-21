@@ -1,3 +1,17 @@
+using CheckAuthentication.Controllers;
+using CheckAuthentication.Data;
+using CheckAuthentication.Models;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
+using System.Net;
+using System.Text;
+
 namespace CheckAuthentication
 {
     public class Program
@@ -6,8 +20,28 @@ namespace CheckAuthentication
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            var configuration = builder.Configuration;
             // Add services to the container.
             builder.Services.AddControllersWithViews();
+            builder.Services.AddDbContext<ApplicationDbContext>(
+                options =>
+                    options.UseSqlServer
+                    (
+                        builder.Configuration.GetConnectionString("Db")
+                    )
+            );
+
+
+            builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+        .AddCookie(options => {
+            options.LoginPath = "/Account/Login";
+            options.LogoutPath = "/Account/Logout";
+        });
+
+
+            builder.Services.AddAuthorization();
+
+            
 
             var app = builder.Build();
 
@@ -24,6 +58,7 @@ namespace CheckAuthentication
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapControllerRoute(

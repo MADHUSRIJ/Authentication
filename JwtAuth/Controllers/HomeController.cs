@@ -6,6 +6,7 @@ using System.Diagnostics;
 
 namespace JwtAuth.Controllers
 {
+    [Authorize]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
@@ -15,7 +16,7 @@ namespace JwtAuth.Controllers
             _logger = logger;
         }
 
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+
         public IActionResult Index()
         {
             return View();

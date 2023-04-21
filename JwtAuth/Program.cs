@@ -1,18 +1,23 @@
+using Azure;
 using JwtAuth.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using System.Net;
 using System.Text;
 
 namespace JwtAuth
 {
     public class Program
     {
+       
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
             var configuration = builder.Configuration;
+            
+
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
@@ -45,6 +50,7 @@ namespace JwtAuth
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddAuthorization();
 
             var app = builder.Build();
 
@@ -56,17 +62,33 @@ namespace JwtAuth
                 app.UseHsts();
             }
 
+            app.UseStatusCodePages(async context =>  {
+                var request = context.HttpContext.Request;
+                var response = context.HttpContext.Response;
+
+                if (response.StatusCode == (int)HttpStatusCode.Unauthorized)
+
+                {
+                    Console.WriteLine("Unauthorized");
+                    response.Redirect("/Account/Login");
+                }
+               
+            });
+
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
             app.UseRouting();
-
+            app.UseAuthentication();
             app.UseAuthorization();
 
-            app.MapControllerRoute(
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
 
+            });
             app.Run();
         }
     }
